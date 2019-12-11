@@ -10,7 +10,6 @@ import UIKit
 
 class ViewController: UIViewController, UINavigationControllerDelegate
 {
-    @IBOutlet weak var debuglabel: UILabel!
     @IBOutlet var VCView: UIView!
     
     let ResultVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ResultVC")
@@ -59,22 +58,18 @@ class ViewController: UIViewController, UINavigationControllerDelegate
     {
         if (sender.direction == .left)
         {
-            debuglabel.text = "Left"
             GoToSummaryVC()
         }
         if (sender.direction == .right)
         {
-            debuglabel.text = "Right"
             GoToResultVC()
         }
         if (sender.direction == .up)
         {
-            debuglabel.text = "Up"
             OpenCamera()
         }
         if (sender.direction == .down)
         {
-            debuglabel.text = "Down"
             GoToLoadVC()
         }
     }

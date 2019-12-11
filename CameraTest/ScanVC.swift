@@ -8,6 +8,7 @@
 
 import UIKit
 import AVFoundation
+import Alamofire
 
 class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
 {
@@ -17,6 +18,8 @@ class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
     var captureS = AVCaptureSession()
     var stillImageOutput = AVCapturePhotoOutput()
     var videoPreviewLayer = AVCaptureVideoPreviewLayer()
+    
+    var audiodata: String = String()
     
     override func viewDidLoad()
     {
@@ -72,6 +75,29 @@ class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
         let image = UIImage(data: imageData)
         
         print("Captured!!")
+        
+        let data = image?.pngData()
+        let b64_d = data?.base64EncodedString()
+        
+        AF.request("http://35.221.78.179:5000/base64img", method: .post, parameters: ["image" : b64_d, "date" : "123", "gender" : "M"], encoder: JSONParameterEncoder.default).responseJSON
+        { response in  switch response.result
+            {
+            case .failure(let error):
+                print(error)
+                if let data = response.data, let responseString = String(data: data, encoding: .utf8) {print(responseString)}
+            case .success(let responseObject):
+                let dicdata = responseObject as! Dictionary<String, Any>
+                self.audiodata = dicdata["audio"] as! String
+                self.performSegue(withIdentifier: "ScanToRead", sender: self)
+            }
+        }
+        
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?)
+    {
+        let dest = segue.destination as! ResultVC
+        dest.audio_b64 = audiodata
     }
     
     @objc func TakePic()
