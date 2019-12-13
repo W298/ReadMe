@@ -19,8 +19,6 @@ class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
     var stillImageOutput = AVCapturePhotoOutput()
     var videoPreviewLayer = AVCaptureVideoPreviewLayer()
     
-    var audiodata: String = String()
-    
     override func viewDidLoad()
     {
         super.viewDidLoad()
@@ -87,17 +85,16 @@ class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
                 if let data = response.data, let responseString = String(data: data, encoding: .utf8) {print(responseString)}
             case .success(let responseObject):
                 let dicdata = responseObject as! Dictionary<String, Any>
-                self.audiodata = dicdata["audio"] as! String
+                let stringaudio = dicdata["audio"] as! String
+                
+                let startindex = stringaudio.index(after: stringaudio.startindex)
+                
+                stringaudio = stringaudio[
+                UserDefaults.standard.set(stringaudio, forKey: "123")
                 self.performSegue(withIdentifier: "ScanToRead", sender: self)
             }
         }
         
-    }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?)
-    {
-        let dest = segue.destination as! ResultVC
-        dest.audio_b64 = audiodata
     }
     
     @objc func TakePic()

@@ -10,16 +10,11 @@ import UIKit
 import Alamofire
 import AVFoundation
 
-var player: AVAudioPlayer!
-
 class ResultVC: UIViewController, UINavigationControllerDelegate
 {
     var isplaying: Bool = false
     @IBOutlet weak var playbutton: UIImageView!
     @IBOutlet weak var timelabel: UILabel!
-    
-    var audio_b64: String = String()
-    var audiodata: Data = Data()
     
     override func viewDidLoad()
     {
@@ -35,15 +30,6 @@ class ResultVC: UIViewController, UINavigationControllerDelegate
         view.addGestureRecognizer(TapG)
         view.addGestureRecognizer(UpG)
         view.addGestureRecognizer(DownG)
-        
-        audiodata = Data(base64Encoded: audio_b64)!
-    
-        do {
-            player = try AVAudioPlayer(data: audiodata)
-        }
-        catch let error {
-            print(error.localizedDescription)
-        }
     }
     
     override func didReceiveMemoryWarning()
@@ -65,7 +51,15 @@ class ResultVC: UIViewController, UINavigationControllerDelegate
             // Play Audio
             playbutton.image = UIImage(systemName: "pause")
             
-            player.play()
+            let string = UserDefaults.standard.value(forKey: "123") as! String
+            let audio = Data(base64Encoded: string, options: .ignoreUnknownCharacters)!
+            do {
+                let player = try AVAudioPlayer(data: audio)
+                player.play()
+            }
+            catch let error {
+                print(error.localizedDescription)
+            }
             
             isplaying = true
         }
@@ -80,10 +74,4 @@ class ResultVC: UIViewController, UINavigationControllerDelegate
     {
         // Go 10s Backward
     }
-    
-    @IBAction func DebugDL(_ sender: UIButton)
-    {
-        // let audiodata = Data(base64Encoded: <#T##String#>)
-    }
-    
 }
