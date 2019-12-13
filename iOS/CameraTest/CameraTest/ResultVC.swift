@@ -16,6 +16,9 @@ class ResultVC: UIViewController, UINavigationControllerDelegate
     @IBOutlet weak var playbutton: UIImageView!
     @IBOutlet weak var timelabel: UILabel!
     
+    var audio_get_string = String()
+    var play_name = String()
+    
     override func viewDidLoad()
     {
         super.viewDidLoad()
@@ -51,7 +54,7 @@ class ResultVC: UIViewController, UINavigationControllerDelegate
             // Play Audio
             playbutton.image = UIImage(systemName: "pause")
             
-            let string = UserDefaults.standard.value(forKey: "123") as! String
+            let string = UserDefaults.standard.value(forKey: play_name) as! String
             let audio = Data(base64Encoded: string, options: .ignoreUnknownCharacters)!
             do {
                 let player = try AVAudioPlayer(data: audio)

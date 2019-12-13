@@ -19,6 +19,8 @@ class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
     var stillImageOutput = AVCapturePhotoOutput()
     var videoPreviewLayer = AVCaptureVideoPreviewLayer()
     
+    var play_name_date = String ()
+    
     override func viewDidLoad()
     {
         super.viewDidLoad()
@@ -86,15 +88,25 @@ class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
             case .success(let responseObject):
                 let dicdata = responseObject as! Dictionary<String, Any>
                 let stringaudio = dicdata["audio"] as! String
+                self.play_name_date = dicdata["date"] as! String
                 
-                let startindex = stringaudio.index(after: stringaudio.startindex)
                 
-                stringaudio = stringaudio[
-                UserDefaults.standard.set(stringaudio, forKey: "123")
+                // Correct String Base 64
+                let starti = stringaudio.index(stringaudio.startIndex, offsetBy: 3)
+                let stringaudio_edited = stringaudio[starti..<(stringaudio.endIndex)]
+
+                // Save Audio Base 64
+                UserDefaults.standard.set(stringaudio_edited, forKey: self.play_name_date)
                 self.performSegue(withIdentifier: "ScanToRead", sender: self)
             }
         }
         
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?)
+    {
+        let dest = segue.destination as! ResultVC
+        dest.play_name = play_name_date
     }
     
     @objc func TakePic()
