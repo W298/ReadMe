@@ -19,8 +19,9 @@
 {'audio' : audio_base64, 'date' : date}
 ```
 - `audio_base64` : Base64로 인코딩된 오디오
-- `audio_base64` 텍스트의 맨 앞부분인 `b\'` 라는 문자열을 제거해야 함
+- `audio_base64` 텍스트의 맨 앞부분인 `b\'` 라는 문자열, 맨 뒷부분인 `\'`를 제거해야 함
 - ex) `b\'//NExAASUJmQAUwYAL/Q4JAkCQoK4EAOEyJeZn7+L17/` -> `//NExAASUJmQAUwYAL/Q4JAkCQoK4EAOEyJeZn7+L17/`
+- ex) `VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV\'` -> `VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV`
 - `date` : 리퀘스트를 보낸 시각 (저장할 때 이용)
 
 ### 2. /GetChar
