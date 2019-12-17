@@ -7,7 +7,9 @@
 ### 1. /Base64Image
  - Request : JSON (Image)
 ```json
-{'image' : image_base64, 'date' : current_date, 'gender' : gender_voice}
+{
+        "image" : "image_base64", "date" : "current_date", "gender" : "gender_voice"
+}
 ```
 - `image_base64` : 이미지를 Base64로 인코딩한 String
 - `current_date` : 이미지를 보낸 시각 (파일 이름)
@@ -15,7 +17,9 @@
 ---
 - Return : JSON (Audio)
 ```json
-{'audio' : audio_base64, 'date' : date, 'summary' : summary_str}
+{
+        "audio" : "audio_base64", "date" : "date", "summary" : "summary_str"
+}
 ```
 - `audio_base64` : Base64로 인코딩된 오디오
 `audio_base64` 텍스트의 맨 앞부분 문자 2개와 맨 뒷부분 문자 1개를 제거해야하 함
@@ -28,6 +32,8 @@
 ---
 - Return : JSON (Audio)
 ```json
-{'audio' : audio_base64}
+{
+        "audio" : "audio_base64"
+}
 ```
 - `audio_base64` : Base64로 인코딩된 오디오
