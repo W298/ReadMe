@@ -14,6 +14,8 @@ class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
 {
 
     @IBOutlet weak var preView: UIView!
+    @IBOutlet weak var ProcessIndi: UIActivityIndicatorView!
+    @IBOutlet weak var ProcessLabel: UILabel!
     
     var captureS = AVCaptureSession()
     var stillImageOutput = AVCapturePhotoOutput()
@@ -79,7 +81,30 @@ class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
         let data = image?.pngData()
         let b64_d = data?.base64EncodedString()
         
-        AF.request("http://35.221.78.179:5000/base64img", method: .post, parameters: ["image" : b64_d, "date" : "123", "gender" : "M"], encoder: JSONParameterEncoder.default).responseJSON
+        let date = Date()
+        let formatter = DateFormatter()
+        
+        var voicegender = "M"
+        switch UserDefaults.standard.value(forKey: "VoiceGender") as! Int
+        {
+        case 0:
+            voicegender = "M"
+        case 1:
+            voicegender = "F"
+        case 2:
+            voicegender = "N"
+        default:
+            voicegender = "M"
+        }
+
+        formatter.dateFormat = "yyyyMMddHHmm"
+        
+        ProcessIndi.startAnimating()
+        ProcessLabel.text = "Processing..."
+        
+        preView.alpha = 0
+        
+        AF.request("http://35.221.78.179:5000/base64img", method: .post, parameters: ["image" : b64_d, "date" : formatter.string(from: date), "gender" : voicegender], encoder: JSONParameterEncoder.default).responseJSON
         { response in  switch response.result
             {
             case .failure(let error):
@@ -89,25 +114,26 @@ class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
                 let dicdata = responseObject as! Dictionary<String, Any>
                 let stringaudio = dicdata["audio"] as! String
                 self.play_name_date = dicdata["date"] as! String
+                print(dicdata["summary"] as! String)
+            
+                AudioData.AddNameData(name: self.play_name_date)
+                AudioData.AddAudioData(name: self.play_name_date, audio_b64: stringaudio, needcorrect: true)
                 
+                UserDefaults.standard.set(self.play_name_date, forKey: "DefaultAudio")
                 
-                // Correct String Base 64
-                let starti = stringaudio.index(stringaudio.startIndex, offsetBy: 3)
-                let stringaudio_edited = stringaudio[starti..<(stringaudio.endIndex)]
-
-                // Save Audio Base 64
-                UserDefaults.standard.set(stringaudio_edited, forKey: self.play_name_date)
-                self.performSegue(withIdentifier: "ScanToRead", sender: self)
+                self.navigationController?.popToRootViewController(animated: true)
             }
         }
         
     }
     
+    /*
     override func prepare(for segue: UIStoryboardSegue, sender: Any?)
     {
         let dest = segue.destination as! ResultVC
         dest.play_name = play_name_date
     }
+    */
     
     @objc func TakePic()
     {

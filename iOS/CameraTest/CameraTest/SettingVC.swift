@@ -12,11 +12,13 @@ class SettingVC: UITableViewController
 {
     @IBOutlet weak var ReadSpeedSlider: UISlider!
     @IBOutlet weak var ModeEnabledSwitch: UISwitch!
+    @IBOutlet weak var VoiceSelector: UISegmentedControl!
     
     override func viewDidLoad()
     {
         super.viewDidLoad()
         
+        // Default Value
         if UserDefaults.standard.value(forKey: "ModeEnabled") == nil
         {
             UserDefaults.standard.set(true, forKey: "ModeEnabled")
@@ -27,7 +29,14 @@ class SettingVC: UITableViewController
             UserDefaults.standard.set(1, forKey: "ReadSpeed")
         }
         
+        if UserDefaults.standard.value(forKey: "VoiceGender") == nil
+        {
+            UserDefaults.standard.set(0, forKey: "VoiceGender")
+        }
+        
         ReadSpeedSlider.value = Float(UserDefaults.standard.value(forKey: "ReadSpeed") as! Int)
+        ModeEnabledSwitch.setOn(UserDefaults.standard.value(forKey: "ModeEnabled") as! Bool, animated: true)
+        VoiceSelector.setEnabled(true, forSegmentAt: UserDefaults.standard.value(forKey: "VoiceGender") as! Int)
     }
 
     // MARK: - Table view data source
@@ -41,7 +50,7 @@ class SettingVC: UITableViewController
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
     {
         // #warning Incomplete implementation, return the number of rows
-        return 2
+        return 3
     }
     
     @IBAction func SliderChange(_ sender: UISlider)
@@ -66,7 +75,21 @@ class SettingVC: UITableViewController
         }
     }
     
-
+    @IBAction func VoiceChange(_ sender: UISegmentedControl)
+    {
+        switch VoiceSelector.selectedSegmentIndex
+        {
+        case 0:
+            UserDefaults.standard.set(0, forKey: "VoiceGender")
+        case 1:
+            UserDefaults.standard.set(1, forKey: "VoiceGender")
+        case 2:
+            UserDefaults.standard.set(2, forKey: "VoiceGender")
+        default:
+            UserDefaults.standard.set(0, forKey: "VoiceGender")
+        }
+    }
+    
     /*
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
