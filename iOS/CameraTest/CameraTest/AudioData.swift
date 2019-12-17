@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import AVFoundation
 
 class AudioData
 {
@@ -63,7 +64,31 @@ class AudioData
     
     static func AddSummaryData(name: String, summary: String)
     {
-        
+        UserDefaults.standard.set(summary, forKey: name + String("_summary"))
     }
-
+    
+    static func GetSummaryData(name: String) -> String
+    {
+        return UserDefaults.standard.value(forKey: name) as! String
+    }
+    
+    static func Speak(synt: AVSpeechSynthesizer, str:String, rate: Float = 0.5)
+    {
+        // Create Default Value when Data not exist (To Prevent Error)
+        if UserDefaults.standard.value(forKey: "ModeEnabled") == nil
+        {
+            UserDefaults.standard.set(true, forKey: "ModeEnabled")
+        }
+        
+        // Speak Only When ModeEnabled is True
+        if UserDefaults.standard.value(forKey: "ModeEnabled") as! Bool
+        {
+            let utterance = AVSpeechUtterance(string: str)
+            
+            utterance.voice = AVSpeechSynthesisVoice(language: "ko-KR")
+            utterance.rate = rate
+            
+            synt.speak(utterance)
+        }
+    }
 }

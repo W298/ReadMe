@@ -7,26 +7,36 @@
 //
 
 import UIKit
+import AVFoundation
 
 class ViewController: UIViewController, UINavigationControllerDelegate
 {
     @IBOutlet var VCView: UIView!
     
+    // Get Reference of Result View Controller
     let ResultVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ResultVC")
     
-    var image_put: UIImage!
+    // Create Instance of Synthesizer
+    let synt = AVSpeechSynthesizer()
     
     override func viewDidLoad()
     {
         super.viewDidLoad()
         
+        // Beginning Speak
+        AudioData.Speak(synt: synt, str: "안녕하세요, 리드미입니다. 위로 스와이프하면 스캔 화면, 아래로 스와이프하면 리스트 화면, 오른쪽으로 스와이프하면 읽어주기 화면, 왼쪽으로 스와이프하면 요약 화면으로 이동합니다. 어느 화면에서든지 메인화면으로 돌아올려면 왼쪽 끝에서 오른쪽으로 스와이프하면 됩니다.")
+        
+        // MARK: - Setup Recognizer
+        // Init Swipe Gesture Recognizer
         let SwipeLeft = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipes(_:)))
         let SwipeRight = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipes(_:)))
         let SwipeUp = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipes(_:)))
         let SwipeDown = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipes(_:)))
         
+        // Init Double Tap Recognizer
         let DoubleTap = UITapGestureRecognizer(target: self, action: #selector(GoSetting))
         
+        // Setup Recognizer
         SwipeLeft.direction = .left
         SwipeRight.direction = .right
         SwipeUp.direction = .up
@@ -34,12 +44,19 @@ class ViewController: UIViewController, UINavigationControllerDelegate
         
         DoubleTap.numberOfTapsRequired = 2
         
+        // Add Recognizer to View
         view.addGestureRecognizer(SwipeLeft)
         view.addGestureRecognizer(SwipeRight)
         view.addGestureRecognizer(SwipeUp)
         view.addGestureRecognizer(SwipeDown)
         
         view.addGestureRecognizer(DoubleTap)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool)
+    {
+        // Stop Speaking When Exit
+        synt.stopSpeaking(at: .immediate)
     }
 
     override func didReceiveMemoryWarning()
@@ -49,11 +66,11 @@ class ViewController: UIViewController, UINavigationControllerDelegate
     
     @IBAction func LoadSetting(_ sender: UIBarButtonItem)
     {
+        // Move to Setting VC
         self.performSegue(withIdentifier: "MainToSetting", sender: self)
     }
     
-    
-    // MARK: - Swipe Control
+    // MARK: - Recognizer Control
     @objc func handleSwipes(_ sender:UISwipeGestureRecognizer)
     {
         if (sender.direction == .left)
@@ -79,7 +96,7 @@ class ViewController: UIViewController, UINavigationControllerDelegate
         self.performSegue(withIdentifier: "MainToSetting", sender: self)
     }
     
-    // MARK: - Swipe Function
+    // MARK: - Recognizer Function
     func OpenCamera()
     {
         self.performSegue(withIdentifier: "MainToScan", sender: self)

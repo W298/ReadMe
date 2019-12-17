@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import AVFoundation
 
 class SettingVC: UITableViewController
 {
@@ -14,9 +15,13 @@ class SettingVC: UITableViewController
     @IBOutlet weak var ModeEnabledSwitch: UISwitch!
     @IBOutlet weak var VoiceSelector: UISegmentedControl!
     
+    let synt = AVSpeechSynthesizer()
+    
     override func viewDidLoad()
     {
         super.viewDidLoad()
+        
+        AudioData.Speak(synt: synt, str: "설정 화면입니다.")
         
         // Default Value
         if UserDefaults.standard.value(forKey: "ModeEnabled") == nil
@@ -35,8 +40,10 @@ class SettingVC: UITableViewController
         }
         
         ReadSpeedSlider.value = Float(UserDefaults.standard.value(forKey: "ReadSpeed") as! Int)
+        
         ModeEnabledSwitch.setOn(UserDefaults.standard.value(forKey: "ModeEnabled") as! Bool, animated: true)
-        VoiceSelector.setEnabled(true, forSegmentAt: UserDefaults.standard.value(forKey: "VoiceGender") as! Int)
+        
+        VoiceSelector.selectedSegmentIndex = UserDefaults.standard.value(forKey: "VoiceGender") as! Int
     }
 
     // MARK: - Table view data source

@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import AVFoundation
 
 class LoadVC: UIViewController, UITableViewDelegate, UITableViewDataSource
 {
@@ -19,15 +20,25 @@ class LoadVC: UIViewController, UITableViewDelegate, UITableViewDataSource
     }
     var data_cell = [Cell]()
     
+    let synt = AVSpeechSynthesizer()
+    
     override func viewDidLoad()
     {
         super.viewDidLoad()
+        
+        // Beginning Speak
+        AudioData.Speak(synt: synt, str: "리스트 화면입니다. 한 번 누르면 요약을 읽어주고, 두 번 누르면 선택되어 읽어주기 화면에서 재생할 수 있습니다.")
         
         TableV.delegate = self
         TableV.dataSource = self
         
         data_cell.append(Cell(mainlabel: "2019.11.28 9:00AM", previewlabel: "테스트1"))
         data_cell.append(Cell(mainlabel: "2019.12.1 11:00AM", previewlabel: "테스트2"))
+    }
+    
+    override func viewWillDisappear(_ animated: Bool)
+    {
+        synt.stopSpeaking(at: .immediate)
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int

@@ -12,21 +12,30 @@ import Alamofire
 
 class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
 {
-
+    // Capture Session Variables
     @IBOutlet weak var preView: UIView!
-    @IBOutlet weak var ProcessIndi: UIActivityIndicatorView!
-    @IBOutlet weak var ProcessLabel: UILabel!
-    
     var captureS = AVCaptureSession()
     var stillImageOutput = AVCapturePhotoOutput()
     var videoPreviewLayer = AVCaptureVideoPreviewLayer()
     
-    var play_name_date = String ()
+    // Process Visualizer Variables
+    @IBOutlet weak var ProcessIndi: UIActivityIndicatorView!
+    @IBOutlet weak var ProcessLabel: UILabel!
+    
+    // Current Time Variable
+    var play_name_date = String()
+    
+    // Create Instance of Synthesizer
+    let synt = AVSpeechSynthesizer()
     
     override func viewDidLoad()
     {
         super.viewDidLoad()
         
+        // Beginning Speak
+        AudioData.Speak(synt: synt, str: "스캔 화면입니다. 스캔하려면 화면을 두번 누르세요.")
+        
+        // MARK: - Init Capture Session
         captureS.sessionPreset = .high
         guard let backCamera = AVCaptureDevice.default(for: .video)
             else {
@@ -54,12 +63,24 @@ class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
             self.videoPreviewLayer.frame = self.preView.bounds
         }
         
+        // Init Recognizer
         let DoublePress = UITapGestureRecognizer(target: self, action: #selector(TakePic))
         DoublePress.numberOfTapsRequired = 2
         preView.addGestureRecognizer(DoublePress)
             
     }
     
+    override func viewWillDisappear(_ animated: Bool)
+    {
+        // Stop Capture Session When Exit
+        super.viewWillDisappear(animated)
+        self.captureS.stopRunning()
+        
+        // Stop Speaking When Exit
+        synt.stopSpeaking(at: .immediate)
+    }
+    
+    // MARK: - Setup Capture Session
     func setupLivePreview()
     {
         videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureS)
@@ -69,22 +90,36 @@ class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
         preView.layer.addSublayer(videoPreviewLayer)
     }
     
+    @objc func TakePic()
+    {
+        let settings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.jpeg])
+        stillImageOutput.capturePhoto(with: settings, delegate: self)
+    }
+    
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?)
     {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .seconds(2), execute:
+            {
+                // Notify Currently Processing
+                self.synt.stopSpeaking(at: .word)
+                AudioData.Speak(synt: self.synt, str: "사진을 처리하는 중입니다.")
+            })
+        // MARK: - Prepare Image to Send
         guard let imageData = photo.fileDataRepresentation()
             else {return}
         
+        // Convert image to Base64
         let image = UIImage(data: imageData)
-        
-        print("Captured!!")
-        
         let data = image?.pngData()
         let b64_d = data?.base64EncodedString()
         
+        // Get Current Date
         let date = Date()
         let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMddHHmm"
         
-        var voicegender = "M"
+        // Setup Voice Gender
+        var voicegender = String()
         switch UserDefaults.standard.value(forKey: "VoiceGender") as! Int
         {
         case 0:
@@ -96,14 +131,15 @@ class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
         default:
             voicegender = "M"
         }
-
-        formatter.dateFormat = "yyyyMMddHHmm"
         
+        // Animate Process Visualizer
         ProcessIndi.startAnimating()
         ProcessLabel.text = "Processing..."
         
+        // Hide Camera View
         preView.alpha = 0
         
+        // MARK: - POST image to Server
         AF.request("http://35.221.78.179:5000/base64img", method: .post, parameters: ["image" : b64_d, "date" : formatter.string(from: date), "gender" : voicegender], encoder: JSONParameterEncoder.default).responseJSON
         { response in  switch response.result
             {
@@ -111,42 +147,27 @@ class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
                 print(error)
                 if let data = response.data, let responseString = String(data: data, encoding: .utf8) {print(responseString)}
             case .success(let responseObject):
+                
+                // Recieve Data
                 let dicdata = responseObject as! Dictionary<String, Any>
                 let stringaudio = dicdata["audio"] as! String
                 self.play_name_date = dicdata["date"] as! String
-                print(dicdata["summary"] as! String)
+                let summary = dicdata["summary"] as! String
             
+                // Save Data
                 AudioData.AddNameData(name: self.play_name_date)
                 AudioData.AddAudioData(name: self.play_name_date, audio_b64: stringaudio, needcorrect: true)
-                
+                AudioData.AddSummaryData(name: self.play_name_date, summary: summary)
+    
                 UserDefaults.standard.set(self.play_name_date, forKey: "DefaultAudio")
+                UserDefaults.standard.set(self.play_name_date + String("_summary"), forKey: "DefaultSummary")
                 
-                self.navigationController?.popToRootViewController(animated: true)
+                // Notify Image Process Completed
+                AudioData.Speak(synt: self.synt, str: "사진이 처리되어 메인으로 이동합니다.")
+                
+                // Move Back To Main VC
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .seconds(3), execute: {self.navigationController?.popToRootViewController(animated: true)})
             }
         }
-        
     }
-    
-    /*
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?)
-    {
-        let dest = segue.destination as! ResultVC
-        dest.play_name = play_name_date
-    }
-    */
-    
-    @objc func TakePic()
-    {
-        let settings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.jpeg])
-        stillImageOutput.capturePhoto(with: settings, delegate: self)
-        
-        print("Pressed!!")
-    }
-    
-    override func viewWillDisappear(_ animated: Bool)
-    {
-        super.viewWillDisappear(animated)
-        self.captureS.stopRunning()
-    }
-
 }
