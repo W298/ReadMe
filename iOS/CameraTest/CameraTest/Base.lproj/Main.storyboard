@@ -415,8 +415,8 @@
                                                     <rect key="frame" x="135" y="15" width="253" height="32"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                     <segments>
-                                                        <segment title="Male"/>
-                                                        <segment title="Female"/>
+                                                        <segment title="Man"/>
+                                                        <segment title="Woman"/>
                                                         <segment title="Netural"/>
                                                     </segments>
                                                     <connections>

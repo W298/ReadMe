@@ -90,7 +90,7 @@ class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
         case 0:
             voicegender = "M"
         case 1:
-            voicegender = "F"
+            voicegender = "W"
         case 2:
             voicegender = "N"
         default:
