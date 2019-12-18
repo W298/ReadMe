@@ -16,15 +16,13 @@ class ViewController: UIViewController, UINavigationControllerDelegate
     // Get Reference of Result View Controller
     let ResultVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ResultVC")
     
-    // Create Instance of Synthesizer
-    let synt = AVSpeechSynthesizer()
-    
     override func viewDidLoad()
     {
         super.viewDidLoad()
         
         // Beginning Speak
-        AudioData.Speak(synt: synt, str: "안녕하세요, 리드미입니다. 위로 스와이프하면 스캔 화면, 아래로 스와이프하면 리스트 화면, 오른쪽으로 스와이프하면 읽어주기 화면, 왼쪽으로 스와이프하면 요약 화면으로 이동합니다. 어느 화면에서든지 메인화면으로 돌아올려면 왼쪽 끝에서 오른쪽으로 스와이프하면 됩니다.")
+        AudioData.super_synt.stopSpeaking(at: .immediate)
+        AudioData.SuperSpeak(str: "안녕하세요, 리드미입니다. 위로 스와이프하면 스캔 화면, 아래로 스와이프하면 리스트 화면, 오른쪽으로 스와이프하면 읽어주기 화면, 왼쪽으로 스와이프하면 요약 화면으로 이동합니다. 어느 화면에서든지 메인화면으로 돌아올려면, 왼쪽 끝에서 오른쪽으로 스와이프하면 됩니다.")
         
         // MARK: - Setup Recognizer
         // Init Swipe Gesture Recognizer
@@ -51,12 +49,8 @@ class ViewController: UIViewController, UINavigationControllerDelegate
         view.addGestureRecognizer(SwipeDown)
         
         view.addGestureRecognizer(DoubleTap)
-    }
-    
-    override func viewWillDisappear(_ animated: Bool)
-    {
-        // Stop Speaking When Exit
-        synt.stopSpeaking(at: .immediate)
+        
+        print(UserDefaults.standard.dictionaryRepresentation().keys)
     }
 
     override func didReceiveMemoryWarning()

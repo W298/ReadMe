@@ -14,20 +14,22 @@ class ResultVC: UIViewController, UINavigationControllerDelegate
 {
     @IBOutlet weak var playbutton: UIImageView!
     @IBOutlet weak var timelabel: UILabel!
-
+    @IBOutlet weak var durationlabel: UILabel!
+    @IBOutlet weak var ProcessSlider: UISlider!
+    
     var audio = Data()
     var mTimer = Timer()
+    var isR: Bool = false
     
     var player = AVAudioPlayer()
-    
-    let synt = AVSpeechSynthesizer()
     
     override func viewDidLoad()
     {
         super.viewDidLoad()
         
         // Beginning Speak
-        AudioData.Speak(synt: synt, str: "읽어주기 화면입니다. 화면을 탭하여 오디오를 재생하거나 멈출 수 있고, 위로 스와이프하여 10초 앞으로, 아래로 스와이프하여 10초 전으로 돌아갈 수 있습니다.")
+        AudioData.super_synt.stopSpeaking(at: .immediate)
+        AudioData.SuperSpeak(str: "읽어주기 화면입니다. 화면을 탭하여 오디오를 재생하거나 멈출 수 있고, 위로 스와이프하여 10초 앞으로, 아래로 스와이프하여 10초 전으로 돌아갈 수 있습니다.")
         
         let TapG = UITapGestureRecognizer(target: self, action: #selector(PlayAudio))
         let UpG = UISwipeGestureRecognizer(target: self, action: #selector(GoFront))
@@ -50,7 +52,8 @@ class ResultVC: UIViewController, UINavigationControllerDelegate
         }
         prepareplayer()
         
-        timelabel.text = SecondsToTime(sec: 0) + String(" / ") + SecondsToTime(sec: 0)
+        timelabel.text = SecondsToTime(sec: 0)
+        durationlabel.text = String("/ ") + SecondsToTime(sec: 0)
     }
     
     override func viewWillDisappear(_ animated: Bool)
@@ -60,7 +63,8 @@ class ResultVC: UIViewController, UINavigationControllerDelegate
         player.pause()
         mTimer.invalidate()
         
-        synt.stopSpeaking(at: .immediate)
+        AudioData.super_synt.stopSpeaking(at: .immediate)
+        AudioData.SuperSpeak(str: "메인으로 이동합니다.")
     }
     
     override func didReceiveMemoryWarning()
@@ -70,7 +74,7 @@ class ResultVC: UIViewController, UINavigationControllerDelegate
     
     @objc func PlayAudio()
     {
-        synt.stopSpeaking(at: .immediate)
+        AudioData.super_synt.stopSpeaking(at: .immediate)
         
         if player.isPlaying
         {
@@ -79,20 +83,24 @@ class ResultVC: UIViewController, UINavigationControllerDelegate
             
             player.pause()
             mTimer.invalidate()
+            
+            isR = true
         }
         else
         {
             // Play Audio
             playbutton.image = UIImage(systemName: "pause")
-            
+        
             player.play()
             mTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(CountTime), userInfo: nil, repeats: true)
+            
+            isR = false
         }
     }
     
     @objc func GoFront()
     {
-        synt.stopSpeaking(at: .immediate)
+        AudioData.super_synt.stopSpeaking(at: .immediate)
         
         // Go 10s Front
         player.currentTime = player.currentTime + 10
@@ -102,7 +110,7 @@ class ResultVC: UIViewController, UINavigationControllerDelegate
     
     @objc func GoDown()
     {
-        synt.stopSpeaking(at: .immediate)
+        AudioData.super_synt.stopSpeaking(at: .immediate)
         
         // Go 10s Backward
         player.currentTime = player.currentTime - 10
@@ -112,7 +120,26 @@ class ResultVC: UIViewController, UINavigationControllerDelegate
     
     @objc func CountTime()
     {
-        timelabel.text = SecondsToTime(sec: Int(player.currentTime)) + String(" / ") + SecondsToTime(sec: Int(player.duration))
+        if player.isPlaying
+        {
+            timelabel.text = SecondsToTime(sec: Int(player.currentTime))
+            durationlabel.text = String("/ ") + SecondsToTime(sec: Int(player.duration))
+            
+            ProcessSlider.value = Float(player.currentTime)
+        }
+        else
+        {
+            playbutton.image = UIImage(systemName: "play")
+            mTimer.invalidate()
+            
+            if !isR
+            {
+                let tempsynt = AVSpeechSynthesizer()
+                AudioData.Speak(synt: tempsynt, str: "재생이 완료되었습니다.")
+                
+                isR = true
+            }
+        }
     }
     
     func prepareplayer()
@@ -123,11 +150,17 @@ class ResultVC: UIViewController, UINavigationControllerDelegate
 
             player = try AVAudioPlayer(data: audio, fileTypeHint: AVFileType.mp3.rawValue)
             
+            player.enableRate = true
+            player.rate = Float(UserDefaults.standard.value(forKey: "ReadSpeed") as! Int)
+            
             player.prepareToPlay()
 
         } catch let error {
             print(error.localizedDescription)
         }
+        
+        ProcessSlider.minimumValue = 0
+        ProcessSlider.maximumValue = Float(player.duration)
     }
     
     func SecondsToTime(sec: Int) -> String

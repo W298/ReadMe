@@ -15,13 +15,12 @@ class SettingVC: UITableViewController
     @IBOutlet weak var ModeEnabledSwitch: UISwitch!
     @IBOutlet weak var VoiceSelector: UISegmentedControl!
     
-    let synt = AVSpeechSynthesizer()
-    
     override func viewDidLoad()
     {
         super.viewDidLoad()
         
-        AudioData.Speak(synt: synt, str: "설정 화면입니다.")
+        AudioData.super_synt.stopSpeaking(at: .immediate)
+        AudioData.SuperSpeak(str: "설정 화면입니다.")
         
         // Default Value
         if UserDefaults.standard.value(forKey: "ModeEnabled") == nil
@@ -44,6 +43,12 @@ class SettingVC: UITableViewController
         ModeEnabledSwitch.setOn(UserDefaults.standard.value(forKey: "ModeEnabled") as! Bool, animated: true)
         
         VoiceSelector.selectedSegmentIndex = UserDefaults.standard.value(forKey: "VoiceGender") as! Int
+    }
+    
+    override func viewWillDisappear(_ animated: Bool)
+    {
+        AudioData.super_synt.stopSpeaking(at: .immediate)
+        AudioData.SuperSpeak(str: "메인으로 돌아갑니다.")
     }
 
     // MARK: - Table view data source
@@ -73,12 +78,16 @@ class SettingVC: UITableViewController
         if UserDefaults.standard.value(forKey: "ModeEnabled") as! Bool
         {
             UserDefaults.standard.set(false, forKey: "ModeEnabled")
-            print("Change Mode to False!")
+            
+            AudioData.super_synt.stopSpeaking(at: .immediate)
+            AudioData.SuperSpeak(str: "저시력자 모드가 비활성화되었습니다.")
         }
         else
         {
             UserDefaults.standard.set(true, forKey: "ModeEnabled")
-            print("Change Mode to True!")
+            
+            AudioData.super_synt.stopSpeaking(at: .immediate)
+            AudioData.SuperSpeak(str: "저시력자 모드가 활성화되었습니다.")
         }
     }
     
@@ -88,68 +97,18 @@ class SettingVC: UITableViewController
         {
         case 0:
             UserDefaults.standard.set(0, forKey: "VoiceGender")
+            
+            AudioData.super_synt.stopSpeaking(at: .immediate)
+            AudioData.SuperSpeak(str: "남성 음성으로 설정되었습니다.")
         case 1:
             UserDefaults.standard.set(1, forKey: "VoiceGender")
+            
+            AudioData.super_synt.stopSpeaking(at: .immediate)
+            AudioData.SuperSpeak(str: "여성 음성으로 설정되었습니다.")
         case 2:
             UserDefaults.standard.set(2, forKey: "VoiceGender")
         default:
             UserDefaults.standard.set(0, forKey: "VoiceGender")
         }
     }
-    
-    /*
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
-
-        // Configure the cell...
-
-        return cell
-    }
-    */
-
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
-    }
-    */
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
-    }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }

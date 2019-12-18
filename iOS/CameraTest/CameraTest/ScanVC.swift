@@ -25,15 +25,13 @@ class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
     // Current Time Variable
     var play_name_date = String()
     
-    // Create Instance of Synthesizer
-    let synt = AVSpeechSynthesizer()
-    
     override func viewDidLoad()
     {
         super.viewDidLoad()
         
         // Beginning Speak
-        AudioData.Speak(synt: synt, str: "스캔 화면입니다. 스캔하려면 화면을 두번 누르세요.")
+        AudioData.super_synt.stopSpeaking(at: .immediate)
+        AudioData.SuperSpeak(str: "스캔 화면입니다. 스캔하려면 화면을 두번 누르세요.")
         
         // MARK: - Init Capture Session
         captureS.sessionPreset = .high
@@ -77,7 +75,8 @@ class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
         self.captureS.stopRunning()
         
         // Stop Speaking When Exit
-        synt.stopSpeaking(at: .immediate)
+        AudioData.super_synt.stopSpeaking(at: .immediate)
+        AudioData.SuperSpeak(str: "메인으로 이동합니다.")
     }
     
     // MARK: - Setup Capture Session
@@ -101,8 +100,8 @@ class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .seconds(2), execute:
             {
                 // Notify Currently Processing
-                self.synt.stopSpeaking(at: .word)
-                AudioData.Speak(synt: self.synt, str: "사진을 처리하는 중입니다.")
+                AudioData.super_synt.stopSpeaking(at: .word)
+                AudioData.SuperSpeak(str: "사진을 처리하는 중입니다.")
             })
         // MARK: - Prepare Image to Send
         guard let imageData = photo.fileDataRepresentation()
@@ -120,6 +119,11 @@ class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
         
         // Setup Voice Gender
         var voicegender = String()
+        if UserDefaults.standard.value(forKey: "VoiceGender") == nil
+        {
+            UserDefaults.standard.set(0, forKey: "VoiceGender")
+        }
+        
         switch UserDefaults.standard.value(forKey: "VoiceGender") as! Int
         {
         case 0:
@@ -157,13 +161,13 @@ class ScanVC: UIViewController, AVCapturePhotoCaptureDelegate
                 // Save Data
                 AudioData.AddNameData(name: self.play_name_date)
                 AudioData.AddAudioData(name: self.play_name_date, audio_b64: stringaudio, needcorrect: true)
-                AudioData.AddSummaryData(name: self.play_name_date, summary: summary)
+                AudioData.AddSummaryData(nameofdate: self.play_name_date, summary: summary)
     
                 UserDefaults.standard.set(self.play_name_date, forKey: "DefaultAudio")
-                UserDefaults.standard.set(self.play_name_date + String("_summary"), forKey: "DefaultSummary")
+                UserDefaults.standard.set(self.play_name_date, forKey: "DefaultSummary")
                 
                 // Notify Image Process Completed
-                AudioData.Speak(synt: self.synt, str: "사진이 처리되어 메인으로 이동합니다.")
+                AudioData.SuperSpeak(str: "사진이 처리되어 메인으로 이동합니다.")
                 
                 // Move Back To Main VC
                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .seconds(3), execute: {self.navigationController?.popToRootViewController(animated: true)})
