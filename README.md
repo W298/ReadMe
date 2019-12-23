@@ -6,6 +6,8 @@
 ### 2. 프로젝트 특징
 - 제스쳐(Gesture) 기반의 UI : 저시력자들을 위해 버튼을 최소화하고 제스쳐만으로 조작할 수 있게 함
 ![UI](UI.jpg)
+### 3. 프로세스
+![Process](Connection.jpg)
 ## II. 서버 설정
 || /Base64Image| /GetChar|
 | ------ | ------ | ------ |
